@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug User Session</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .user-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin: 10px 0;
+        }
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h2>🔍 User Session Debugger</h2>
+        <p>This page shows what's stored in your browser's localStorage.</p>
+    </div>
+
+    <div id="output"></div>
+
+    <div class="info-box">
+        <button onclick="clearAndReload()">🗑️ Clear Session & Reload</button>
+        <p style="margin-top: 10px; font-size: 14px; color: #666;">
+            This will clear your login and redirect to the dashboard.
+        </p>
+    </div>
+
+    <script>
+        const ROLES = {
+            1: 'FDA',
+            2: 'Ingredient Supplier',
+            3: 'Manufacturer',
+            4: 'Repackager',
+            5: 'Distributor',
+            6: 'Pharmacy'
+        };
+
+        const USERS = {
+            '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266': { name: 'FDA Regulatory Authority', role: 1 },
+            '0x70997970C51812dc3A010C7d01b50e0d17dc79C8': { name: 'Ingredient Supplier Co.', role: 2 },
+            '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC': { name: 'PharmaTech Manufacturing', role: 3 },
+            '0x90F79bf6EB2c4f870365E785982E1f101E93b906': { name: 'RePackage Solutions Inc.', role: 4 },
+            '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65': { name: 'Global Distribution Network', role: 5 },
+            '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc': { name: 'City Central Pharmacy', role: 6 }
+        };
+
+        function displayInfo() {
+            const output = document.getElementById('output');
+            const storedUser = localStorage.getItem('currentUser');
+
+            if (!storedUser) {
+                output.innerHTML = `
+                    <div class="info-box error">
+                        <h2>❌ No User Logged In</h2>
+                        <p>localStorage is empty. You need to login first.</p>
+                        <a href="http://localhost:3000">Go to Dashboard</a>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const user = JSON.parse(storedUser);
+                const userInfo = USERS[user.address];
+                const expectedRole = userInfo ? ROLES[userInfo.role] : 'Unknown';
+                const actualRole = ROLES[user.role];
+                const roleMatch = user.role === (userInfo ? userInfo.role : -1);
+
+                output.innerHTML = `
+                    <div class="info-box user-info">
+                        <h2>👤 Current Logged In User</h2>
+                        <p><strong>Name:</strong> ${user.name}</p>
+                        <p><strong>Address:</strong> ${user.address}</p>
+                        <p><strong>Role:</strong> ${actualRole} (${user.role})</p>
+                        <p><strong>Private Key:</strong> ${user.privateKey ? user.privateKey.substring(0, 20) + '...' : '❌ MISSING!'}</p>
+                    </div>
+
+                    <div class="info-box ${roleMatch ? '' : 'error'}">
+                        <h2>${roleMatch ? '✅' : '⚠️'} Validation</h2>
+                        <p><strong>Expected Role:</strong> ${expectedRole}</p>
+                        <p><strong>Actual Role:</strong> ${actualRole}</p>
+                        <p><strong>Match:</strong> ${roleMatch ? '✅ Correct' : '❌ MISMATCH!'}</p>
+                        ${!user.privateKey ? '<p style="color: red;"><strong>⚠️ Private Key is MISSING!</strong></p>' : ''}
+                    </div>
+
+                    <div class="info-box">
+                        <h2>📋 Raw Data</h2>
+                        <pre>${JSON.stringify(user, null, 2)}</pre>
+                    </div>
+
+                    <div class="info-box">
+                        <h2>🔑 Expected User Data for ${user.address}</h2>
+                        ${userInfo ? `
+                            <p><strong>Should Be:</strong> ${userInfo.name}</p>
+                            <p><strong>Should Have Role:</strong> ${ROLES[userInfo.role]}</p>
+                        ` : '<p style="color: red;">❌ Address not recognized!</p>'}
+                    </div>
+                `;
+            } catch (e) {
+                output.innerHTML = `
+                    <div class="info-box error">
+                        <h2>❌ Error Parsing User Data</h2>
+                        <p>The stored data is corrupted.</p>
+                        <p><strong>Error:</strong> ${e.message}</p>
+                        <p><strong>Raw Data:</strong></p>
+                        <pre>${storedUser}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        function clearAndReload() {
+            localStorage.removeItem('currentUser');
+            alert('Session cleared! Redirecting to dashboard...');
+            window.location.href = 'http://localhost:3000';
+        }
+
+        displayInfo();
+    </script>
+</body>
+</html>
