@@ -10,20 +10,27 @@ import {
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
-const REGISTERED_USERS = [
-  { address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', name: 'FDA Regulatory Authority', role: 1 },
-  { address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', name: 'Ingredient Supplier Co.', role: 2 },
-  { address: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', name: 'PharmaTech Manufacturing', role: 3 },
-  { address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', name: 'RePackage Solutions Inc.', role: 4 },
-  { address: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65', name: 'Global Distribution Network', role: 5 },
-  { address: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc', name: 'City Central Pharmacy', role: 6 }
-];
-
 function WorkflowActions({ currentUser, onActionComplete, triggerAction, onActionTriggered }) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [actionType, setActionType] = useState('');
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
+
+  // Fetch registered users on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${API_BASE}/auth/users`);
+        if (response.data.success) {
+          setRegisteredUsers(response.data.users);
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   // Handle external action triggers (from notifications)
   useEffect(() => {
@@ -267,7 +274,14 @@ function WorkflowActions({ currentUser, onActionComplete, triggerAction, onActio
           transferPharmacy: 6
         }[actionType];
 
-        const targetUsers = REGISTERED_USERS.filter(u => u.role === targetRole);
+        const targetUsers = registeredUsers.filter(u => u.role === targetRole);
+
+        const roleNames = {
+          3: 'Manufacturer',
+          4: 'Repackager',
+          5: 'Distributor',
+          6: 'Pharmacy'
+        };
 
         return (
           <>
@@ -279,20 +293,24 @@ function WorkflowActions({ currentUser, onActionComplete, triggerAction, onActio
               onChange={(e) => setFormData({ ...formData, batchId: e.target.value })}
             />
             <FormControl fullWidth margin="normal">
-              <InputLabel>Select Recipient</InputLabel>
+              <InputLabel>Select {roleNames[targetRole]}</InputLabel>
               <Select
                 value={formData.manufacturer || formData.repackager || formData.distributor || formData.pharmacy || ''}
                 onChange={(e) => {
                   const key = actionType.replace('transfer', '').toLowerCase();
                   setFormData({ ...formData, [key]: e.target.value });
                 }}
-                label="Select Recipient"
+                label={`Select ${roleNames[targetRole]}`}
               >
-                {targetUsers.map(user => (
-                  <MenuItem key={user.address} value={user.address}>
-                    {user.name}
-                  </MenuItem>
-                ))}
+                {targetUsers.length > 0 ? (
+                  targetUsers.map(user => (
+                    <MenuItem key={user.address} value={user.address}>
+                      {user.name} ({user.email})
+                    </MenuItem>
+                  ))
+                ) : (
+                  <MenuItem disabled>No {roleNames[targetRole]} registered</MenuItem>
+                )}
               </Select>
             </FormControl>
             <TextField

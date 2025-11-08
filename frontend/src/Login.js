@@ -15,97 +15,144 @@ const ROLES = {
   6: 'Pharmacy'
 };
 
-// Pre-registered users from deployment
-const REGISTERED_USERS = [
-  {
-    address: '0x0000000000000000000000000000000000000001',
-    privateKey: 'patient',
-    name: 'Patient (Public Access)',
-    role: 0
-  },
-  {
-    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-    privateKey: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-    name: 'FDA Regulatory Authority',
-    role: 1
-  },
-  {
-    address: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-    privateKey: '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d',
-    name: 'Ingredient Supplier Co.',
-    role: 2
-  },
-  {
-    address: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
-    privateKey: '0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a',
-    name: 'PharmaTech Manufacturing',
-    role: 3
-  },
-  {
-    address: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
-    privateKey: '0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6',
-    name: 'RePackage Solutions Inc.',
-    role: 4
-  },
-  {
-    address: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
-    privateKey: '0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a',
-    name: 'Global Distribution Network',
-    role: 5
-  },
-  {
-    address: '0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc',
-    privateKey: '0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba',
-    name: 'City Central Pharmacy',
-    role: 6
-  }
-];
-
 function Login({ onLogin }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState('');
-  const [privateKey, setPrivateKey] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleQuickLogin = (user) => {
-    onLogin(user);
+  const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+
+  const handleSignUp = async () => {
+    if (!name || !email || !password || !selectedRole) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      // Register user (backend will generate blockchain wallet)
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          role: parseInt(selectedRole)
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      setSuccess('✅ Account created! You can now login.');
+      setTimeout(() => {
+        setIsSignUp(false);
+        setSuccess('');
+        setPassword('');
+      }, 2000);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleManualLogin = () => {
-    if (!selectedRole || !privateKey) {
-      setError('Please select a role and enter your private key');
+  const handleLogin = async () => {
+    if (!email || !password || !selectedRole) {
+      setError('Please enter email, password and select role');
       return;
     }
 
-    // Find user by private key
-    const user = REGISTERED_USERS.find(u => 
-      u.privateKey.toLowerCase() === privateKey.toLowerCase()
-    );
+    try {
+      setLoading(true);
+      setError('');
 
-    if (!user) {
-      setError('Invalid private key or user not registered');
-      return;
+      const response = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          password,
+          role: parseInt(selectedRole)
+        })
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      // Login successful - user data includes blockchain credentials
+      onLogin(data.user);
+
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-
-    if (user.role !== parseInt(selectedRole)) {
-      setError('Private key does not match selected role');
-      return;
-    }
-
-    onLogin(user);
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 8 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <LoginIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-          <Typography variant="h3" gutterBottom>
-            Pharma Supply Chain
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
-            Role-Based Authentication System
-          </Typography>
-        </Box>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        py: 4
+      }}
+    >
+      <Container maxWidth="sm">
+        <Paper
+          elevation={24}
+          sx={{
+            p: 4,
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(10px)'
+          }}
+        >
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box
+              sx={{
+                width: 80,
+                height: 80,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)'
+              }}
+            >
+              <LoginIcon sx={{ fontSize: 40, color: 'white' }} />
+            </Box>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              {isSignUp ? 'Join the Pharmaceutical Supply Chain Network' : 'Sign in to continue'}
+            </Typography>
+          </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
@@ -113,77 +160,147 @@ function Login({ onLogin }) {
           </Alert>
         )}
 
-        {/* Quick Login Section */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Quick Login (Demo Users)
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Click on a user to login instantly:
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            {REGISTERED_USERS.map((user) => (
-              <Button
-                key={user.address}
-                variant="outlined"
-                onClick={() => handleQuickLogin(user)}
-                sx={{ justifyContent: 'flex-start', textTransform: 'none', p: 2 }}
-              >
-                <Box sx={{ textAlign: 'left', width: '100%' }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Role: {ROLES[user.role]} | Address: {user.address.slice(0, 10)}...
-                  </Typography>
-                </Box>
-              </Button>
-            ))}
-          </Box>
-        </Box>
+        {success && (
+          <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess('')}>
+            {success}
+          </Alert>
+        )}
 
-        {/* Manual Login Section */}
-        <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Manual Login
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Select your role and enter your private key:
-          </Typography>
+        <Box component="form" onSubmit={(e) => { e.preventDefault(); isSignUp ? handleSignUp() : handleLogin(); }}>
+          {isSignUp && (
+            <TextField
+              fullWidth
+              label="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your full name"
+              required
+              sx={{
+                mb: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2
+                }
+              }}
+            />
+          )}
+
+          <TextField
+            fullWidth
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            required
+            sx={{
+              mb: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2
+              }
+            }}
+          />
+          
           <FormControl fullWidth sx={{ mb: 2 }}>
             <InputLabel>Select Your Role</InputLabel>
             <Select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
               label="Select Your Role"
+              required
+              sx={{ borderRadius: 2 }}
             >
               {Object.entries(ROLES).map(([value, label]) => (
                 <MenuItem key={value} value={value}>
-                  {label}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {value === '0' && '👤'}
+                    {value === '1' && '⚖️'}
+                    {value === '2' && '🏭'}
+                    {value === '3' && '⚙️'}
+                    {value === '4' && '📦'}
+                    {value === '5' && '🚚'}
+                    {value === '6' && '🏥'}
+                    <span>{label}</span>
+                  </Box>
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
+
           <TextField
             fullWidth
-            label="Private Key"
+            label="Password"
             type="password"
-            value={privateKey}
-            onChange={(e) => setPrivateKey(e.target.value)}
-            placeholder="0x..."
-            sx={{ mb: 2 }}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            required
+            sx={{
+              mb: isSignUp ? 2 : 3,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2
+              }
+            }}
+            helperText={isSignUp ? "Minimum 6 characters" : ""}
           />
+
+          {isSignUp && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                🔐 A blockchain wallet will be automatically created for you!
+              </Typography>
+            </Alert>
+          )}
+
           <Button
             fullWidth
+            type="submit"
             variant="contained"
-            onClick={handleManualLogin}
             size="large"
+            disabled={loading}
+            sx={{
+              py: 1.5,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%)',
+                boxShadow: '0 6px 16px rgba(102, 126, 234, 0.5)'
+              }
+            }}
           >
-            Login
+            {loading ? '⏳ Processing...' : (isSignUp ? '🚀 Create Account' : '🔓 Login')}
           </Button>
+
+          <Box sx={{ mt: 3, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              {isSignUp ? 'Already have an account?' : "Don't have an account?"}
+            </Typography>
+            <Button
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError('');
+                setSuccess('');
+                setName('');
+                setEmail('');
+                setPassword('');
+                setSelectedRole('');
+              }}
+              variant="text"
+              sx={{
+                textTransform: 'none',
+                fontWeight: 'bold',
+                color: '#667eea'
+              }}
+            >
+              {isSignUp ? 'Login here' : 'Sign Up now'}
+            </Button>
+          </Box>
         </Box>
       </Paper>
     </Container>
+    </Box>
   );
 }
 

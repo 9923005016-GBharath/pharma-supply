@@ -1,0 +1,74 @@
+[
+  {
+    "name": "chandu",
+    "email": "dchandu496@gmailcom",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 1,
+    "address": "0x8bc8Eaf270FB68B90A7C66919577dd6a64305798",
+    "encryptedPrivateKey": "b23e600f894197bdba4c728b4ebaddf99d5658a8fc3e32c64ce29ed6e05db4be440600181c971375e1c56fb2b1babd3b534de26a7c183e2f34986218787167445fb6ec40ce6f6ecd945b6370d6ebd25f",
+    "createdAt": 1762597570223
+  },
+  {
+    "name": "vamsi",
+    "email": "vamsi@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 3,
+    "address": "0xb7753E590df8e18fBfe9D6e471403280f7cD940D",
+    "encryptedPrivateKey": "2d125421fe0bd691bf77dbce31a933594178825e79808df3b80053fcbe2789486cb40cdf92e995056d316b94b7aa877aef80ab24a8f4f803c1e76beb9e08853e1b3733e6cc03997f808c1aa4c992b0b8",
+    "createdAt": 1762597632956
+  },
+  {
+    "name": "BHARATH",
+    "email": "bharath@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 2,
+    "address": "0x979AB0bdD74ebB666e37218E13634D9Ca6b8b54E",
+    "encryptedPrivateKey": "1657b67da1cf1c9a3a02da74d74a1500f9922a81e41059b06ccf005553faf9643b3594bc9620e1ca6a0f34f1db6d2490425b4ca437334d26c1efdd9aae457024f44c16537b2fe4cdea8e175933a0a2d1",
+    "createdAt": 1762597702287
+  },
+  {
+    "name": "chandu",
+    "email": "dchandu496@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 1,
+    "address": "0xf01Fd5dB28E6719903835243e354061eCF786554",
+    "encryptedPrivateKey": "4f4fed2c65270e1783c88def718bf114315ac3883186ff3a6b7d04b9ce4f4a168d633ad6a117ec212acdb87774f7c8cb6d4e17904f71495fc9546e5b4a93aaf8fa99bad0a0dd3b4ebebae1894c112765",
+    "createdAt": 1762597780337
+  },
+  {
+    "name": "chandra",
+    "email": "chandra@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 4,
+    "address": "0x352914F14013E31da07535c208D74F53E18EB660",
+    "encryptedPrivateKey": "068144d8a2615ddb27e261cb448ed3449653571ce5f6d229b88742aceeb0536ef5d03acf46820990057dee04747572282d640a024fc2ff8c5832fbee3b1bab835755cab957eb3d091236cfdb93870be2",
+    "createdAt": 1762599037885
+  },
+  {
+    "name": "vijay",
+    "email": "vijay@gamil.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 5,
+    "address": "0xD1149f8d5F3A87a4C7a2ff47Bf16bAFDf4b0a4d7",
+    "encryptedPrivateKey": "6ac09f8f2345d8b587b4162a1216f0a0ca1d9a1584339d01c03464935aac2651f4498467ca5776e3adad3dc05965c3be50d62ced0bda39c27f873af9707c60d750915ab33829c0aa774876a867d27ee7",
+    "createdAt": 1762599967944
+  },
+  {
+    "name": "rajesh",
+    "email": "rajesh@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 6,
+    "address": "0x9B90923a8aF5f97aBC6f0c9AE476C02036AA27eD",
+    "encryptedPrivateKey": "6e578a5cdfdea9f1aea78a1aa5b69236f3af084969c2b8c96e4895e8272027655ee7f51d5f5f69b6171e87a85b66ca98fe9f05b40ec6f2fafac3f005c5faf466c1d8df26dbbcb08b78fa5e708b350583",
+    "createdAt": 1762600832002
+  },
+  {
+    "name": "vijay",
+    "email": "vijay@gmail.com",
+    "hashedPassword": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+    "role": 5,
+    "address": "0x37b86b9380D2C3d301B4c41D67D29c650a78717d",
+    "encryptedPrivateKey": "2e74d3ae9142908f2175f2a96a20308e250da748ad39b6444554c84d16e763a0d584ae3876497b148bb906bd952c4e9333016afd345cb16cf47d2d47d2118aa60515ae3badf5e69d8f25eda22951a2af",
+    "createdAt": 1762601141907
+  }
+]

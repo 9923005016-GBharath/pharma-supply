@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear Pharma Supply Chain Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .danger {
+            background: #f44336;
+        }
+        .danger:hover {
+            background: #da190b;
+        }
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+            display: none;
+        }
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Clear Login Data</h1>
+        
+        <div class="info">
+            <h3>⚠️ When to use this tool:</h3>
+            <ul>
+                <li>Getting "Unauthorized role" errors</li>
+                <li>Can't perform actions (manufacture, transfer, etc.)</li>
+                <li>Logged in before system updates</li>
+                <li>Account shows wrong blockchain address</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>📋 Current Stored Data:</h3>
+            <div id="currentData">Loading...</div>
+        </div>
+
+        <button onclick="viewData()">📊 View Detailed Data</button>
+        <button class="danger" onclick="clearData()">🗑️ Clear All Login Data</button>
+
+        <div class="success" id="successMsg">
+            ✅ Data cleared successfully!<br>
+            Please close this tab and login again.
+        </div>
+
+        <div class="info" style="margin-top: 30px; font-size: 14px;">
+            <h3>ℹ️ What this does:</h3>
+            <p>This tool removes stored login credentials from your browser. You'll need to login again after clearing data.</p>
+            <p><strong>Safe to use:</strong> This only affects data stored in your browser, not the backend database.</p>
+        </div>
+    </div>
+
+    <script>
+        function loadCurrentData() {
+            const userData = localStorage.getItem('currentUser');
+            const dataDiv = document.getElementById('currentData');
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    dataDiv.innerHTML = `
+                        <strong>Email:</strong> ${user.email || 'N/A'}<br>
+                        <strong>Role:</strong> ${getRoleName(user.role)}<br>
+                        <strong>Address:</strong> <code>${user.address || 'N/A'}</code>
+                    `;
+                } catch (e) {
+                    dataDiv.innerHTML = '❌ Invalid data format';
+                }
+            } else {
+                dataDiv.innerHTML = '✅ No stored data (already cleared)';
+            }
+        }
+
+        function getRoleName(role) {
+            const roles = {
+                0: 'Patient',
+                1: 'FDA',
+                2: 'Supplier',
+                3: 'Manufacturer',
+                4: 'Repackager',
+                5: 'Distributor',
+                6: 'Pharmacy'
+            };
+            return roles[role] || 'Unknown';
+        }
+
+        function viewData() {
+            const userData = localStorage.getItem('currentUser');
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    const details = JSON.stringify(user, null, 2);
+                    alert('Stored User Data:\n\n' + details);
+                } catch (e) {
+                    alert('Error reading data: ' + e.message);
+                }
+            } else {
+                alert('No data stored');
+            }
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear your login data?\n\nYou will need to login again.')) {
+                localStorage.removeItem('currentUser');
+                document.getElementById('successMsg').style.display = 'block';
+                loadCurrentData();
+                
+                setTimeout(() => {
+                    window.close();
+                }, 3000);
+            }
+        }
+
+        // Load data on page load
+        loadCurrentData();
+    </script>
+</body>
+</html>

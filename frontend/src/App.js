@@ -17,6 +17,7 @@ import Login from './Login';
 import WorkflowActions from './WorkflowActions';
 import Notifications from './Notifications';
 import PendingActions from './PendingActions';
+import LiveTemperature from './LiveTemperature';
 
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -133,7 +134,20 @@ function App() {
     localStorage.setItem('currentUser', JSON.stringify(user));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Call backend to clear session
+    if (currentUser && currentUser.email) {
+      try {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentUser.email })
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
   };
@@ -142,12 +156,44 @@ function App() {
     setTriggerAction(action);
   };
 
-  // Check for stored user on mount
+  // Check for stored user on mount and validate it
   useEffect(() => {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-    }
+    const validateStoredUser = async () => {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser);
+          
+          // Validate user still exists and has valid credentials
+          const response = await fetch(`${API_BASE}/auth/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              email: user.email,
+              address: user.address
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.valid) {
+            setCurrentUser(user);
+          } else {
+            // User data is stale - clear it
+            console.warn('⚠️ Stored user data is outdated. Please login again.');
+            localStorage.removeItem('currentUser');
+            alert('Your session has expired or your account was updated. Please login again.');
+          }
+        } catch (error) {
+          console.error('Error validating user:', error);
+          // Clear localStorage on validation error (blockchain may have been reset)
+          localStorage.removeItem('currentUser');
+          alert('Unable to validate your session. Please login again.');
+        }
+      }
+    };
+    
+    validateStoredUser();
   }, []);
 
   // Show login if no user
@@ -692,13 +738,20 @@ function App() {
         )}
 
         {/* IoT Monitoring Tab */}
-        {currentTab === 3 && selectedBatch && (
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-              🌡️ IoT Environmental Monitoring - {selectedBatch.batchId}
-            </Typography>
+        {currentTab === 3 && (
+          <>
+            {/* Live ESP32 Temperature Display */}
+            <Box sx={{ mb: 3 }}>
+              <LiveTemperature />
+            </Box>
 
-            {/* Batch Summary Info */}
+            {selectedBatch && (
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
+                  🌡️ IoT Environmental Monitoring - {selectedBatch.batchId}
+                </Typography>
+
+                {/* Batch Summary Info */}
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} md={3}>
                 <Paper sx={{ p: 2, bgcolor: '#e3f2fd', textAlign: 'center' }}>
@@ -975,21 +1028,10 @@ function App() {
                   </Table>
                 </TableContainer>
               </>
-            ) : (
-              <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f5f5f5' }}>
-                <Sensors sx={{ fontSize: 60, color: '#bdbdbd', mb: 2 }} />
-                <Typography variant="h6" color="textSecondary" gutterBottom>
-                  No IoT Data Available
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Start IoT monitoring for this batch using the simulator:
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1, fontFamily: 'monospace', bgcolor: '#e0e0e0', p: 1, borderRadius: 1 }}>
-                  node iot-simulator.js start {selectedBatch.batchId}
-                </Typography>
-              </Box>
-            )}
-          </Paper>
+            ) : null}
+              </Paper>
+          )}
+          </>
         )}
           </>
         )}
